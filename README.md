@@ -64,3 +64,8 @@ PostgreSQL
 Docker / Docker Compose
 
 This repository follows a monorepo structure while maintaining independently deployable services.
+
+### Project Structure
+
+contracts/        -> Shared data contracts  
+services/         -> Independently deployable services
