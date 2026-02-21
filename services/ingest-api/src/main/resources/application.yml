@@ -1,0 +1,19 @@
+server:
+  port : 8080
+
+kafka:
+  topic:
+    main: ${KAFKA_TOPIC_MAIN:events.ingest.v1}
+
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
