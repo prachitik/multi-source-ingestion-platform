@@ -6,15 +6,22 @@ import java.util.List;
 public final class EventEnvelopeValidator {
     private EventEnvelopeValidator(){};
 
+    public static void validateOrThrow(EventEnvelope ev){
+        List<String> errors = validate(ev);
+        if(!errors.isEmpty()){
+            throw new IllegalArgumentException("Invalid EventEnvelop: " + String.join("; ", errors));
+        }
+    }
+
     public static List<String> validate(EventEnvelope ev){
         List<String> errors = new ArrayList<>();
         if(ev == null){
             return List.of("Event is null.");
         }
-        if(ev.tenantId().isEmpty()) errors.add("tenantId is required");
-        if(ev.source().isEmpty()) errors.add("source is required");
-        if(ev.eventType().isEmpty()) errors.add("eventType is required");
-        if(ev.eventID().isEmpty()) errors.add("eventId is required");
+        if(ev.tenantId() == null || ev.tenantId().trim().isEmpty()) errors.add("tenantId is required");
+        if(ev.source() == null) errors.add("source is required");
+        if(ev.eventType() == null || ev.eventType().trim().isEmpty()) errors.add("eventType is required");
+        if(ev.eventID() == null || ev.eventID().trim().isEmpty()) errors.add("eventId is required");
 
         if(ev.occurredAt() == null) errors.add("occurredAt is required");
         if(ev.ingestedAt() == null) errors.add("ingestedAt is required");
