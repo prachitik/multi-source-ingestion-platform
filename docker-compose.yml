@@ -90,6 +90,23 @@ services:
     depends_on:
       - kafka
 
+  event-processor:
+    build:
+      context: ./services/event-processor
+    container_name: event-processor
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - KAFKA_TOPIC_MAIN=events.ingest.v1
+      - KAFKA_CONSUMER_GROUP=event-processor-v1
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ingestion
+      - POSTGRES_USER=ingestion
+      - POSTGRES_PASSWORD=ingestion
+    depends_on:
+      - kafka
+      - postgres
+
 volumes:
   kafka_data:
   postgres_data:

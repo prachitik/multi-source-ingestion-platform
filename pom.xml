@@ -28,6 +28,7 @@
     <modules>
         <module>contracts</module>
         <module>services/ingest-api</module>
+        <module>services/event-processor</module>
     </modules>
 
     <build>
