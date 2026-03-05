@@ -107,6 +107,21 @@ services:
       - kafka
       - postgres
 
+  query-api:
+    build:
+      context: ./services/query-api
+    container_name: query-api
+    environment:
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=ingestion
+      - POSTGRES_USER=ingestion
+      - POSTGRES_PASSWORD=ingestion
+    ports:
+      - "8090:8090"
+    depends_on:
+      - postgres
+
 volumes:
   kafka_data:
   postgres_data:
