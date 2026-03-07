@@ -2,6 +2,10 @@ package com.pk.ingestapi.api;
 
 import com.pk.contracts.EventEnvelope;
 import com.pk.contracts.EventEnvelopeValidator;
+import com.pk.ingestapi.dto.BatchIngestItem;
+import com.pk.ingestapi.dto.BatchIngestRequest;
+import com.pk.ingestapi.dto.BatchIngestResponse;
+import com.pk.ingestapi.dto.BatchItemResult;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -9,6 +13,9 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -43,6 +50,76 @@ public class IngestController {
         //publish with key=tenantId (topic, key, data)
         kafkaTemplate.send(topic, tenantId, eventEnvelop);
         return ResponseEntity.accepted().body(new IngestResponse(UUID.randomUUID().toString(), "ACCEPTED"));
+    }
+
+    @PostMapping("/events:batch")
+    public ResponseEntity<?> ingestBatchEvents(@PathVariable String tenantId,
+                                               @Valid @RequestBody BatchIngestRequest request){
+        // extra check for validation or if list is null
+        if(request.events() == null || request.events().isEmpty()){
+            return ResponseEntity.badRequest().body("events must contain at least 1 event");
+        }
+
+        HashSet<String> seen = new HashSet<String>();
+        List<BatchItemResult> results = new ArrayList<BatchItemResult>(request.events().size());
+
+        int accepted = 0;
+        int failed = 0;
+
+        for(int i = 0; i < request.events().size(); i++){
+            BatchIngestItem item = request.events().get(i);
+
+            EventEnvelope eventEnvelope = new EventEnvelope(tenantId,
+                    request.source(),
+                    item.eventType(),
+                    item.eventId(),
+                    item.occurredAt(),
+                    Instant.now(),
+                    item.schemaVersion() <= 0 ? 1 : item.schemaVersion(),
+                    item.payload(),
+                    (item.correlationId() != null && !item.correlationId().isBlank())
+                            ? item.correlationId() : UUID.randomUUID().toString()
+            );
+
+            // dedup within the batch
+            String dedupKey = tenantId + "|" + request.source() + "|" + item.eventType() + "|" + item.eventId();
+            if(!seen.add(dedupKey)){
+                failed++;
+                results.add(new BatchItemResult(i, item.eventId(), "REJECTED_DUP_IN_BATCH",
+                        "duplicate event in same batch", null));
+                continue;
+            }
+            //validate each event - do not fail entire batch
+            try{
+                EventEnvelopeValidator.validateOrThrow(eventEnvelope);
+            } catch(Exception e){
+                failed++;
+                results.add(new BatchItemResult(i, item.eventId(), "REJECTED",
+                        e.getMessage(), null));
+                continue;
+            }
+
+            // validated and hence now can be published to Kafka
+            // publish with key=tenantId (topic, key, data)
+            try{
+                kafkaTemplate.send(topic, tenantId, eventEnvelope);
+                accepted++;
+                results.add(new BatchItemResult(i, item.eventId(), "ACCEPTED",
+                        "event published", UUID.randomUUID().toString()));
+            } catch(Exception e){
+                failed++;
+                results.add(new BatchItemResult(i, item.eventId(), "FAILED",
+                        e.getMessage(), null));
+            }
+
+        }
+        return ResponseEntity.accepted().body(new BatchIngestResponse(
+                tenantId,
+                request.source(),
+                accepted,
+                failed,
+                results
+        ));
     }
 
     record IngestResponse(String ingestId, String status){
