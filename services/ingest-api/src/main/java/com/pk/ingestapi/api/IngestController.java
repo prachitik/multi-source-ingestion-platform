@@ -2,10 +2,12 @@ package com.pk.ingestapi.api;
 
 import com.pk.contracts.EventEnvelope;
 import com.pk.contracts.EventEnvelopeValidator;
-import com.pk.ingestapi.dto.BatchIngestItem;
-import com.pk.ingestapi.dto.BatchIngestRequest;
-import com.pk.ingestapi.dto.BatchIngestResponse;
-import com.pk.ingestapi.dto.BatchItemResult;
+import com.pk.ingestapi.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
@@ -18,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.UUID;
 
+@Tag(name = "Ingestion", description = "APIs for ingesting events into the platform")
 @RestController
 @RequestMapping("/v1/tenants/{tenantId}")
 public class IngestController {
@@ -31,6 +34,15 @@ public class IngestController {
         this.topic = topic;
     }
 
+    @Operation(
+            summary = "Ingest a single event",
+            description = "Validates a single event request, publishes it to Kafka using tenantId as the message key, and returns an accepted response."
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "202", description = "Event accepted for asynchronous processing"),
+            @ApiResponse(responseCode = "400", description = "Invalid request payload"),
+            @ApiResponse(responseCode = "500", description = "Unexpected server error")
+    })
     @PostMapping("/events")
     public ResponseEntity<?> ingestSingleEvent(@PathVariable String tenantId, @Valid @RequestBody IngestEventRequest request){
 
@@ -52,9 +64,15 @@ public class IngestController {
         return ResponseEntity.accepted().body(new IngestResponse(UUID.randomUUID().toString(), "ACCEPTED"));
     }
 
+    @Operation(
+            summary = "Batch ingest events",
+            description = "Accepts up to 200 events in a single request, validates each item, publishes valid events to Kafka, and returns per-item status."
+    )
     @PostMapping("/events:batch")
-    public ResponseEntity<?> ingestBatchEvents(@PathVariable String tenantId,
-                                               @Valid @RequestBody BatchIngestRequest request){
+    public ResponseEntity<?> ingestBatchEvents(
+            @Parameter(description = "Tenant identifier", example = "tenant_123")
+            @PathVariable String tenantId,
+            @Valid @RequestBody BatchIngestRequest request){
         // extra check for validation or if list is null
         if(request.events() == null || request.events().isEmpty()){
             return ResponseEntity.badRequest().body("events must contain at least 1 event");
@@ -121,9 +139,5 @@ public class IngestController {
                 results
         ));
     }
-
-    record IngestResponse(String ingestId, String status){
-    }
-
 
 }
