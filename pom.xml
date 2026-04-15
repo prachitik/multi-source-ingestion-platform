@@ -30,6 +30,7 @@
         <module>services/ingest-api</module>
         <module>services/event-processor</module>
         <module>services/query-api</module>
+        <module>services/fintech-batch-loader</module>
     </modules>
 
     <build>

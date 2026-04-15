@@ -9,7 +9,6 @@ import org.springframework.validation.annotation.Validated;
 @ConfigurationProperties(prefix = "loader")
 public record LoaderProperties (
         @NotBlank String tenantId,
-        @NotBlank String source,
         @Min(1) int batchSize,
         @NotBlank String ingestApiBaseUrl,
         @NotBlank String incomingDir,

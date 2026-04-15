@@ -3,15 +3,14 @@ server:
 
 loader:
   tenant-id: tenant_fintech
-  source: FINTECH
   batch-size: 100
-  ingest-api-base-url: http://localhost:8080
-  incoming-dir: ./data/fintech/incoming
-  processing-dir: ./data/fintech/processing
-  processed-dir: ./data/fintech/processed
+  ingest-api-base-url: http://localhost:8088
+  incoming-dir: ../../data/fintech/incoming
+  processing-dir: ../../data/fintech/processing
+  processed-dir: ../../data/fintech/processed
 
 spring:
   datasource:
-    url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:ingestion}
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB:ingestion}
     username: ${POSTGRES_USER:ingestion}
     password: ${POSTGRES_PASSWORD:ingestion}
