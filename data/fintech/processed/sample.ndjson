@@ -1,0 +1,3 @@
+{"eventId":"ft_1001","eventType":"PAYMENT_INITIATED","occurredAt":"2026-04-09T18:00:00Z","schemaVersion":1,"payload":{"accountId":"A1","amount":120.50},"correlationId":"corr-1001"}
+{"eventId":"ft_1002","eventType":"PAYMENT_SETTLED","occurredAt":"2026-04-09T18:01:00Z","schemaVersion":1,"payload":{"accountId":"A1","amount":120.50},"correlationId":"corr-1002"}
+{"eventId":"ft_1003","eventType":"PAYMENT_FAILED","occurredAt":"2026-04-09T18:02:00Z","schemaVersion":1,"payload":{"accountId":"A2","amount":99.99},"correlationId":"corr-1003"}
