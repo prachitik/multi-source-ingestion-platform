@@ -32,6 +32,7 @@
         <module>services/query-api</module>
         <module>services/fintech-batch-loader</module>
         <module>Services/activity-ws-server</module>
+        <module>Services/activity-ws-connector</module>
     </modules>
 
     <build>
