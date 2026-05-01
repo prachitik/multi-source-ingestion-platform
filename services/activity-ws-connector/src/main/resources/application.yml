@@ -1,0 +1,23 @@
+server:
+  port: 8085
+
+ws-activity:
+  default-feed-url: ws://localhost:8084/ws/activity-feed
+  topic: events.ingest.v1
+  initial-backoff-seconds: 1
+  max-backoff-seconds: 30
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+logging:
+  level:
+    root: INFO
+    com.pk.activitywsconnector: INFO
