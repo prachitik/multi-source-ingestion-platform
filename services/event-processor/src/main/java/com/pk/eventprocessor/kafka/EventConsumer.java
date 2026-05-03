@@ -3,6 +3,8 @@ package com.pk.eventprocessor.kafka;
 import com.pk.contracts.EventEnvelope;
 import com.pk.contracts.EventEnvelopeValidator;
 import com.pk.eventprocessor.db.EventRepository;
+import com.pk.eventprocessor.db.NormalizedActivityEventRepository;
+import com.pk.eventprocessor.service.EventNormalizer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,9 +17,16 @@ public class EventConsumer {
 
     private static final Logger log = LoggerFactory.getLogger(EventConsumer.class);
     private final EventRepository repo;
+    private final EventNormalizer normalizer;
+    private final NormalizedActivityEventRepository normalizedRepo;
 
-    public EventConsumer(EventRepository repo){
+    public EventConsumer(EventRepository repo,
+                         EventNormalizer normalizer,
+                         NormalizedActivityEventRepository normalizedRepo
+    ){
         this.repo = repo;
+        this.normalizer = normalizer;
+        this.normalizedRepo = normalizedRepo;
     }
 
     @KafkaListener(topics="${app.kafka.topic}")
@@ -31,6 +40,7 @@ public class EventConsumer {
             boolean inserted = repo.insertRawEvent(ev);
 
             if(inserted){
+                normalizer.normalize(ev).ifPresent(normalizedRepo::save);
                 repo.upsertReceipt(ev.tenantId(), ev.eventID(), "PROCESSED", null);
                 log.info("processed tenant={} eventId={} partition={} offset={}",
                         ev.tenantId(), ev.eventID(), record.partition(), record.offset());

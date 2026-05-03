@@ -1,14 +1,17 @@
-package com.pk.eventprocessor.repository;
+package com.pk.eventprocessor.db;
 
 import com.pk.eventprocessor.model.NormalizedActivityEvent;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
+
+import java.sql.Timestamp;
 
 @Repository
 public class NormalizedActivityEventRepository {
     private final JdbcTemplate jdbcTemplate;
 
     public NormalizedActivityEventRepository(JdbcTemplate jdbcTemplate) {
+
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -49,8 +52,8 @@ public class NormalizedActivityEventRepository {
                 event.activeMinutes(),
                 event.sleepMinutes(),
                 event.sleepQuality(),
-                event.occurredAt(),
-                event.ingestedAt()
+                Timestamp.from(event.occurredAt()),
+                Timestamp.from(event.ingestedAt())
         );
     }
 
