@@ -33,6 +33,7 @@
         <module>services/fintech-batch-loader</module>
         <module>Services/activity-ws-server</module>
         <module>Services/activity-ws-connector</module>
+        <module>services/mock-jobs-api</module>
     </modules>
 
     <build>
