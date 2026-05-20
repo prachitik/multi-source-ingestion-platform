@@ -34,6 +34,7 @@
         <module>Services/activity-ws-server</module>
         <module>Services/activity-ws-connector</module>
         <module>services/mock-jobs-api</module>
+        <module>services/jobs-poller</module>
     </modules>
 
     <build>
