@@ -1,0 +1,21 @@
+server:
+  port: 8087
+
+spring:
+  application:
+    name: jobs-poller
+
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5433}/${POSTGRES_DB:ingestion}
+    username: ${POSTGRES_USER:ingestion}
+    password: ${POSTGRES_PASSWORD:ingestion}
+    driver-class-name: org.postgresql.Driver
+
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
